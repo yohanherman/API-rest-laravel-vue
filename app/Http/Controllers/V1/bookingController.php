@@ -11,36 +11,90 @@ use Illuminate\Support\Facades\Validator;
 
 class bookingController
 {
-    public function index()
+    // displaying client booking
+    public function userReservation()
     {
-        $datas = DB::table('bookings')
-            ->join('users', 'users.id', '=', 'bookings.user_id')
-            ->join('places', 'places.id', '=', 'bookings.place_id')
-            ->get();
+        $user_id = auth()->id();
 
-        if ($datas) {
+        if ($user_id) {
+            $datas = DB::table('bookings')
+                ->join('places', 'places.id', '=', 'bookings.place_id')
+                ->join('users', 'users.id', '=', 'bookings.user_id')
+                ->select('places.*', 'users.name')
+                ->where('user_id', $user_id)
+                ->get();
+
+            if (!$datas->isEmpty()) {
+                $response = [
+                    'datas' => $datas,
+                    'success' => true,
+                    'status' => 200
+                ];
+                return response()->json($response, 200);
+            }
             $response = [
                 'datas' => $datas,
-                'success' => true,
-                'status' => 200
+                'success' => false,
+                'status' => 500
+            ];
+            return response()->json($response, 500);
+        }
+        $response = [
+            "success" => false,
+            "messge" => "you must be connected",
+            "status" => 401,
+        ];
+        return response()->json($response, 401);
+    }
+
+    // Cancelling a booking
+    public function cancelBooking(Request $request, int $id)
+    {
+        $rules = [
+            'place_id' => 'required'
+        ];
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            $response = [
+                'success' => false,
+                'validation error' => $validator->errors(),
+                'status' => 500
+            ];
+            return response()->json($response, 501);
+        }
+        $placestatus = places::where('id', $request->input('place_id'))->first();
+        $placestatus->status_id = 1;
+        $placestatus->save();
+
+        $booking = booking::findOrFail($id);
+        $booking->status_id = 3;
+        $booking->save();
+
+        if ($booking) {
+            $response = [
+                "booking" => $booking,
+                "message" => "status updated successfully",
+                "status" => 200
             ];
             return response()->json($response, 200);
         }
         $response = [
-            'datas' => $datas,
-            'success' => false,
-            'status' => 500
+            "booking" => $booking,
+            "success" => false,
+            "status" => 500,
         ];
-        return response()->json($response, 500);
+        return response()->json($response, 501);
     }
 
 
-    public function book(Request $request)
+    // making a booking
+    public function addBooking(Request $request)
     {
         $rules = [
             'user_id' => 'required',
             'place_id' => 'required',
-            'booking_date' => 'required|date'
+            'booking_date' => 'required|date',
+            'status_id' => 'required'
         ];
         $validator = Validator::make($request->all(), $rules);
 
@@ -73,6 +127,30 @@ class bookingController
             'datas' => $datas,
             'success' => false,
             "status" => 500
+        ];
+        return response()->json($response, 500);
+    }
+
+
+    public function index()
+    {
+        $datas = DB::table('bookings')
+            ->join('users', 'users.id', '=', 'bookings.user_id')
+            ->join('places', 'places.id', '=', 'bookings.place_id')
+            ->get();
+
+        if ($datas) {
+            $response = [
+                'datas' => $datas,
+                'success' => true,
+                'status' => 200
+            ];
+            return response()->json($response, 200);
+        }
+        $response = [
+            'datas' => $datas,
+            'success' => false,
+            'status' => 500
         ];
         return response()->json($response, 500);
     }

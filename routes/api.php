@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\V1\AuthController;
 use App\Http\Controllers\V1\bookingController;
 use App\Http\Controllers\V1\PlaceController;
 use Illuminate\Http\Request;
@@ -11,12 +12,34 @@ Route::get('/user', function (Request $request) {
 
 
 Route::prefix('/v1')->group(function () {
-    Route::get('/place', [PlaceController::class, 'index']);
-    Route::get('/place/{id}', [PlaceController::class, 'show']);
-    Route::delete('/place/{id}', [PlaceController::class, 'destroy']);
-    Route::put('/place/{id}', [PlaceController::class, 'update']);
-    Route::post('/store', [PlaceController::class, 'store']);
 
+    // non required authentication routes
+    Route::get('/place', [PlaceController::class, 'index'])->name('get.place');
+    Route::post('/register', [AuthController::class, 'registerPost'])->name('get.register');
+    Route::post('/login', [AuthController::class, 'loginPost'])->name('post.register');
+    // 
+
+
+    // route a proteger par le middleware admin
+    Route::get('/place/{id}', [PlaceController::class, 'show']);
+    Route::put('/place/{id}', [PlaceController::class, 'update'])->name('update.place')->where('id', '[0-9]+');
+    Route::post('/store', [PlaceController::class, 'store']);
+    Route::delete('/place/{id}', [PlaceController::class, 'destroy'])->name('destroy.place')->where('id', '[0-9]+');
     Route::post('/book', [bookingController::class, 'book']);
-    Route::get('/book', [bookingController::class, 'index']);
+    // Route::get('/boo', [bookingController::class, 'index']);
+    // 
+
+
+    // Authenticated routes for normal users
+    Route::middleware('auth:api')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/booking-show', [bookingController::class, 'userReservation'])->name('get.userBooking');
+        Route::put('/booking-cancel/{id}', [bookingController::class, 'cancelBooking'])->where('id', '[0-9]+');
+        Route::post('/booking-store', [bookingController::class, 'addBooking']);
+    });
 });
+
+
+
+// Route::get('/email/verify', [AuthController::class, 'verificationMail'])->middleware('auth')->name('verification.notice');
+// Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'procedeMail'])->middleware(['auth', 'signed'])->name('verification.verify');

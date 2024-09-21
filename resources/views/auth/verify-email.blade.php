@@ -1,0 +1,1 @@
+<p>page de verification de mail</p>
