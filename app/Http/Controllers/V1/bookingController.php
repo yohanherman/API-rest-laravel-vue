@@ -66,7 +66,8 @@ class bookingController
         $placestatus->status_id = 1;
         $placestatus->save();
 
-        $booking = booking::findOrFail($id);
+        $booking = booking::where('place_id', $request->input('place_id'))->first();
+        // $booking = booking::findOrFail($id);
         $booking->status_id = 3;
         $booking->save();
 
@@ -93,7 +94,6 @@ class bookingController
         $rules = [
             'user_id' => 'required',
             'place_id' => 'required',
-            'booking_date' => 'required|date',
             'status_id' => 'required'
         ];
         $validator = Validator::make($request->all(), $rules);
@@ -122,13 +122,14 @@ class bookingController
                 'message' => 'successfuly created , and status updated'
             ];
             return response()->json($response, 201);
+        } else {
+            $response = [
+                'datas' => $datas,
+                'success' => false,
+                "status" => 500
+            ];
+            return response()->json($response, 500);
         }
-        $response = [
-            'datas' => $datas,
-            'success' => false,
-            "status" => 500
-        ];
-        return response()->json($response, 500);
     }
 
 

@@ -13,4 +13,9 @@ class places extends Model
         'place_number',
         'status_id'
     ];
+
+    public function booking()
+    {
+        return $this->hasOne(booking::class);
+    }
 }

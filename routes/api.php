@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\V1\pdfController;
 use App\Http\Controllers\V1\AuthController;
 use App\Http\Controllers\V1\bookingController;
 use App\Http\Controllers\V1\PlaceController;
@@ -13,10 +14,13 @@ Route::get('/user', function (Request $request) {
 
 Route::prefix('/v1')->group(function () {
 
+    Route::get('/downloadpdf/{id}', [pdfController::class, 'downloadPdf']);
+
     // non required authentication routes
     Route::get('/place', [PlaceController::class, 'index'])->name('get.place');
     Route::post('/register', [AuthController::class, 'registerPost'])->name('get.register');
-    Route::post('/login', [AuthController::class, 'loginPost'])->name('post.register');
+    Route::post('/login', [AuthController::class, 'loginPost'])->name('post.login');
+    // Route::get('/login', [AuthController::class, 'login'])->name('get.login');
     // 
 
 
@@ -32,10 +36,11 @@ Route::prefix('/v1')->group(function () {
 
     // Authenticated routes for normal users
     Route::middleware('auth:api')->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/logout', [AuthController::class, 'logout']);
         Route::get('/booking-show', [bookingController::class, 'userReservation'])->name('get.userBooking');
         Route::put('/booking-cancel/{id}', [bookingController::class, 'cancelBooking'])->where('id', '[0-9]+');
         Route::post('/booking-store', [bookingController::class, 'addBooking']);
+        // Route::get('/downloadpdf', [pdfController::class, 'downloadPdf']);
     });
 });
 
