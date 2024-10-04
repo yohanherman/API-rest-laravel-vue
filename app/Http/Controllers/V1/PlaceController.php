@@ -4,6 +4,7 @@ namespace App\Http\Controllers\V1;
 
 use App\Models\places;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -22,10 +23,10 @@ class placeController extends Controller
         }
         $response = [
             'datas' => $datas,
-            'success' => false,
-            'status' => 500
+            'success' => true,
+            'status' => 200
         ];
-        return response()->json($datas, 500);
+        return response()->json($datas, 200);
     }
 
     public function show(int $id)
@@ -43,7 +44,6 @@ class placeController extends Controller
             'datas' => $datas,
             'success' => false,
             'status' => 500
-
         ];
         return response()->json($response, 500);
     }
@@ -93,7 +93,6 @@ class placeController extends Controller
 
     public function update(Request $request, int $id)
     {
-
         $rules = [
             "place_number" => 'required',
             "status_id" => 'required|numeric',
@@ -126,5 +125,51 @@ class placeController extends Controller
             'status' => 500
         ];
         return response()->json($response, 500);
+    }
+
+    // places en fonction des coordonnees geographiques du users
+    public function getParkingNearby(Request $request)
+    {
+        $rules = [
+            'longitude' => 'required',
+            "latitude" => 'required'
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            $response = [
+                'success' => false,
+                'validation Error' . $validator->errors(),
+                'status' => 400
+            ];
+            return response()->json($response, 500);
+        }
+        $longitude = $request->input('longitude');
+        $latitude = $request->input('latitude');
+
+        // j'utilise la formule d' Haversine
+        $datas = DB::table('places')
+            ->select(DB::raw("*, ( 6371 * acos( cos( radians ($latitude) ) 
+            * cos( radians( latitude) ) * cos( radians( longitude ) - radians( $longitude ) ) 
+            + sin( radians( $latitude ) ) * sin( radians( latitude) ) ) ) AS distance"))
+            ->having('distance', '<', 500)
+            ->orderby('distance')
+            ->get();
+
+        if (!$datas->isEmpty()) {
+            $response = [
+                'datas' => $datas,
+                'success' => true,
+                'status' => 200
+            ];
+            return response()->json($response, 200);
+        }
+        $response = [
+            'datas' => $datas,
+            'success' => false,
+            "message" => "no place in the radius of 50 kilometers",
+            'status' => 404
+        ];
+        return response()->json($response, 404);
     }
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\V1\pdfController;
 use App\Http\Controllers\V1\AuthController;
 use App\Http\Controllers\V1\bookingController;
 use App\Http\Controllers\V1\PlaceController;
+use App\Http\Controllers\V1\UserAccountController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,9 +21,10 @@ Route::prefix('/v1')->group(function () {
     Route::get('/place', [PlaceController::class, 'index'])->name('get.place');
     Route::post('/register', [AuthController::class, 'registerPost'])->name('get.register');
     Route::post('/login', [AuthController::class, 'loginPost'])->name('post.login');
+    Route::get('/nearby-places', [PlaceController::class, 'getParkingNearby']);
     // Route::get('/login', [AuthController::class, 'login'])->name('get.login');
     // 
-
+    // Route::put('/editProfile', [UserAccountController::class, 'editProfile']);
 
     // route a proteger par le middleware admin
     Route::get('/place/{id}', [PlaceController::class, 'show']);

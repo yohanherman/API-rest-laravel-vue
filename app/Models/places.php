@@ -11,7 +11,9 @@ class places extends Model
 
     protected $fillable = [
         'place_number',
-        'status_id'
+        'status_id',
+        'latitude',
+        'longitude'
     ];
 
     public function booking()

@@ -20,8 +20,10 @@ class bookingController
             $datas = DB::table('bookings')
                 ->join('places', 'places.id', '=', 'bookings.place_id')
                 ->join('users', 'users.id', '=', 'bookings.user_id')
-                ->select('places.*', 'users.name')
+                ->join('status', 'status.id', '=', 'bookings.status_id')
+                ->select('places.*', 'bookings.*', 'status.*', 'users.name')
                 ->where('user_id', $user_id)
+                ->where('bookings.status_id', 1)
                 ->get();
 
             if (!$datas->isEmpty()) {
@@ -34,10 +36,11 @@ class bookingController
             }
             $response = [
                 'datas' => $datas,
-                'success' => false,
-                'status' => 500
+                'message' => "No data found",
+                // 'success' => false,
+                'status' => 200
             ];
-            return response()->json($response, 500);
+            return response()->json($response, 200);
         }
         $response = [
             "success" => false,
@@ -66,11 +69,12 @@ class bookingController
         $placestatus->status_id = 1;
         $placestatus->save();
 
-        $booking = booking::where('place_id', $request->input('place_id'))->first();
+        $booking = booking::where('place_id', $request->input('place_id'))
+            ->where('status_id', 1)
+            ->first();
         // $booking = booking::findOrFail($id);
         $booking->status_id = 3;
         $booking->save();
-
         if ($booking) {
             $response = [
                 "booking" => $booking,
@@ -86,7 +90,6 @@ class bookingController
         ];
         return response()->json($response, 501);
     }
-
 
     // making a booking
     public function addBooking(Request $request)

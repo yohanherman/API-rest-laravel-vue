@@ -1,0 +1,36 @@
+# Ignorer les fichiers de log
+storage/*.log
+storage/logs/*.log
+
+# Ignorer le dossier de cache
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+
+# Ignorer les fichiers de configuration d'environnement
+.env
+
+# Ignorer les dossiers de dépendances
+vendor/
+node_modules/
+public/storage/
+
+# Ignorer les fichiers temporaires
+*.tmp
+*.temp
+
+# Ignorer les fichiers de compilation
+*.class
+*.o
+*.so
+
+# Ignorer les fichiers d'éditeur
+*.swp
+*~
+.idea/
+.vscode/
+.DS_Store
+
+# Ignorer les fichiers de test
+/tests
+/phpunit.xml
